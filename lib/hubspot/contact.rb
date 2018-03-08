@@ -86,7 +86,6 @@ module Hubspot
                                       body: query)
       end
 
-      # NOTE: problem with batch api endpoint
       # {https://developers.hubspot.com/docs/methods/contacts/get_contact}
       # {https://developers.hubspot.com/docs/methods/contacts/get_batch_by_vid}
       def find_by_id(vids)
@@ -97,8 +96,12 @@ module Hubspot
         end
 
         response = Hubspot::Connection.get_json(path, params)
-        raise Hubspot::ApiError if batch_mode
-        new(response)
+
+        if batch_mode
+          response.each_value.map { |contact_data| new(contact_data) }
+        else
+          new(response)
+        end
       end
 
       # {https://developers.hubspot.com/docs/methods/contacts/get_contact_by_email}
