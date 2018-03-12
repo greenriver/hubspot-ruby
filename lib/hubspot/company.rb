@@ -8,6 +8,7 @@ module Hubspot
     CREATE_COMPANY_PATH               = "/companies/v2/companies/"
     RECENTLY_CREATED_COMPANIES_PATH   = "/companies/v2/companies/recent/created"
     RECENTLY_MODIFIED_COMPANIES_PATH  = "/companies/v2/companies/recent/modified"
+    PAGED_COMPANIES_PATH              = "/companies/v2/companies/paged"
     GET_COMPANY_BY_ID_PATH            = "/companies/v2/companies/:company_id"
     GET_COMPANY_BY_DOMAIN_PATH        = "/companies/v2/domains/:domain/companies"
     UPDATE_COMPANY_PATH               = "/companies/v2/companies/:company_id"
@@ -18,24 +19,53 @@ module Hubspot
     class << self
       # Find all companies by created date (descending)
       # @param opts [Hash] Possible options are:
-      #    recently_updated [boolean] (for querying all accounts by modified time)
+      #    mode [symbol] (paginated, recently created, or recently updated)
       #    count [Integer] for pagination
       #    offset [Integer] for pagination
       # {http://developers.hubspot.com/docs/methods/companies/get_companies_created}
       # {http://developers.hubspot.com/docs/methods/companies/get_companies_modified}
       # @return [Array] Array of Hubspot::Company records
       def all(opts={})
-        recently_updated = opts.delete(:recently_updated) { false }
+        mode = opts.delete(:mode) { :paged }
         # limit = opts.delete(:limit) { 20 }
         # skip = opts.delete(:skip) { 0 }
-        path = if recently_updated
-          RECENTLY_MODIFIED_COMPANIES_PATH
-        else
-          RECENTLY_CREATED_COMPANIES_PATH
-        end
+        path = case mode.to_sym
+               when :recently_modified then RECENTLY_MODIFIED_COMPANIES_PATH
+               when :recently_created then RECENTLY_CREATED_COMPANIES_PATH
+               when :paged then PAGED_COMPANIES_PATH
+               else
+                 raise InvalidParams, "Company requests need a valid mode and you specifed `#{mode}`."
+               end
 
         response = Hubspot::Connection.get_json(path, opts)
-        response['results'].map { |c| new(c) }
+
+        if mode.to_sym == :paged
+          response['companies'].map! { |c| new(c) }
+          response
+        else
+          response['results'].map { |c| new(c) }
+        end
+      end
+
+      def each_company(opts={})
+        raise "need a block to use each_company method" unless block_given?
+
+        page_size = opts.delete(:page_size) { 100 }
+
+        args = opts.dup.merge(mode: :paged, limit: page_size)
+        results = all(args)
+
+        results['companies'].each do |company|
+          yield company
+        end
+
+        while results['has-more']
+          args = opts.dup.merge(mode: :paged, limit: page_size, offset: results['offset'])
+          results = all(args)
+          results['companies'].each do |company|
+            yield company
+          end
+        end
       end
 
       # Finds a list of companies by domain
