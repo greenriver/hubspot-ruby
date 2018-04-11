@@ -53,6 +53,28 @@ module Hubspot
         paged ? response : response['contacts']
       end
 
+      # This is very expensive to run.
+      def each_contact(opts={})
+        raise "need a block to use each_contact method" unless block_given?
+
+        page_size = opts.delete(:page_size) { 100 }
+
+        args = opts.dup.merge(paged: true, limit: page_size)
+        results = all(args)
+
+        results['contacts'].each do |contact|
+          yield contact, 0
+        end
+
+        while results['has-more']
+          args = opts.dup.merge(paged: true, limit: page_size, vidOffset: results['vid-offset'])
+          results = all(args)
+          results['contacts'].each do |contact|
+            yield contact, results['vid-offset']
+          end
+        end
+      end
+
       # TODO: create or update a contact
       # PATH /contacts/v1/contact/createOrUpdate/email/:contact_email
       # API endpoint: https://developers.hubspot.com/docs/methods/contacts/create_or_update
