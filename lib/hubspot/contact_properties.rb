@@ -4,6 +4,7 @@ module Hubspot
     ALL_PROPERTIES_PATH  = '/contacts/v2/properties'
     ALL_GROUPS_PATH      = '/contacts/v2/groups'
     CREATE_PROPERTY_PATH = '/contacts/v2/properties/'
+    GET_PROPERTY_PATH    = '/contacts/v2/properties/named/:property_name'
     UPDATE_PROPERTY_PATH = '/contacts/v2/properties/named/:property_name'
     DELETE_PROPERTY_PATH = '/contacts/v2/properties/named/:property_name'
     CREATE_GROUP_PATH    = '/contacts/v2/groups/'
@@ -25,6 +26,10 @@ module Hubspot
 
       def create!(params={})
         superclass.create!(CREATE_PROPERTY_PATH, params)
+      end
+
+      def get(property_name, params={})
+        superclass.update!(GET_PROPERTY_PATH, property_name, params)
       end
 
       def update!(property_name, params={})

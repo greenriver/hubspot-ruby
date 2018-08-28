@@ -5,6 +5,7 @@ module Hubspot
     class << self
       def get_json(path, opts)
         url = generate_url(path, opts)
+        sleep(0.10)
         response = get(url, format: :json)
         log_request_and_response url, response
         raise(Hubspot::RequestError.new(response)) unless response.success?
@@ -15,6 +16,7 @@ module Hubspot
         no_parse = opts[:params].delete(:no_parse) { false }
 
         url = generate_url(path, opts[:params])
+        sleep(0.10)
         response = post(url, body: opts[:body].to_json, headers: { 'Content-Type' => 'application/json' }, format: :json)
         log_request_and_response url, response, opts[:body]
         raise(Hubspot::RequestError.new(response)) unless response.success?
@@ -24,6 +26,7 @@ module Hubspot
 
       def put_json(path, opts)
         url = generate_url(path, opts[:params])
+        sleep(0.10)
         response = put(url, body: opts[:body].to_json, headers: { 'Content-Type' => 'application/json' }, format: :json)
         log_request_and_response url, response, opts[:body]
         raise(Hubspot::RequestError.new(response)) unless response.success?
@@ -32,6 +35,7 @@ module Hubspot
 
       def delete_json(path, opts)
         url = generate_url(path, opts)
+        sleep(0.10)
         response = delete(url, format: :json)
         log_request_and_response url, response, opts[:body]
         raise(Hubspot::RequestError.new(response)) unless response.success?

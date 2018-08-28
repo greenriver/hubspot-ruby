@@ -63,7 +63,7 @@ module Hubspot
         results = all(args)
 
         results['contacts'].each do |contact|
-          yield contact, 0
+          yield contact, opts[:vidOffset]
         end
 
         while results['has-more']
