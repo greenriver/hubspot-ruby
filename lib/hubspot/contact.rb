@@ -175,6 +175,17 @@ module Hubspot
 
     attr_reader :properties, :vid, :is_new
     attr_reader :is_contact, :list_memberships
+    attr_reader :raw_properties
+    attr_reader :merge_audits 
+    attr_reader :associated_company
+    attr_reader :identity_profiles
+    attr_reader :form_submissions
+    attr_reader :canonical_vid
+    attr_reader :merged_vids
+    attr_reader :portal_id
+    attr_reader :profile_token
+    attr_reader :profile_url
+    attr_reader :response_hash
 
     def initialize(response_hash)
       props = response_hash['properties']
@@ -182,6 +193,17 @@ module Hubspot
       @is_contact = response_hash["is-contact"]
       @list_memberships = response_hash["list-memberships"] || []
       @vid = response_hash['vid']
+      @raw_properties = response_hash["properties"]
+      @merge_audits = response_hash["merge-audits" ]
+      @associated_company = response_hash["associated-company"]
+      @identity_profiles = response_hash["identity-profiles"]
+      @form_submissions = response_hash["form-submissions"]
+      @canonical_vid = response_hash["canonical-vid"]
+      @merged_vids = response_hash["merged-vids"]
+      @portal_id = response_hash["portal-id"]
+      @profile_token = response_hash["profile-token"]
+      @profile_url = response_hash["profile-url"]
+      @response_hash = response_hash
     end
 
     def [](property)
